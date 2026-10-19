@@ -612,8 +612,13 @@ class MideaAcSession(
                 lan.connectAndAuthenticate(t, k)
                 token = t; key = k
                 return
-            } catch (_: Exception) {
-                // EN: ignore and try the cloud / DE: ignorieren und die Cloud versuchen
+            } catch (e: Exception) {
+                // Imported credentials exist: expose the real LAN error instead of
+                // hiding it behind a subsequent cloud API failure (e.g. API 9999).
+                lan.close()
+                throw MideaProtocolError(
+                    "Lokale V3-Authentifizierung fehlgeschlagen (${e.javaClass.simpleName}): ${e.message}"
+                )
             }
         }
         var lastError: Exception? = null
